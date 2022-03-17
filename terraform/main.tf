@@ -55,10 +55,11 @@ resource "azurerm_network_interface" "network_interface" {
 }
 
 data "azurerm_platform_image" "platform_image" {
-  offer     = "UbuntuServer"
   location  = data.azurerm_resource_group.resource_group.location
+  offer     = "UbuntuServer"
   publisher = "Canonical"
   sku       = "18.04-LTS"
+  version   = "latest"
 }
 
 resource "azurerm_linux_virtual_machine" "virtual_machine" {
