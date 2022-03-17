@@ -1,5 +1,11 @@
 name: "CI"
 
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
 on:
   push:
     branches: [ main ]
@@ -9,13 +15,7 @@ jobs:
     defaults:
       run:
         working-directory: "terraform"
-
-    runs-on: ubuntu-latest
     env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_USE_AZUREAD: true
       TF_STATE_BLOB_CONTAINER_NAME: ${{ secrets.TF_STATE_BLOB_CONTAINER_NAME }}
       TF_STATE_BLOB_KEY: ${{ secrets.TF_STATE_BLOB_KEY }}
@@ -23,6 +23,7 @@ jobs:
       TF_STATE_BLOB_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_STATE_BLOB_STORAGE_ACCOUNT_NAME }}
       TF_VAR_public_key: ${{ secrets.TF_VAR_PUBLIC_KEY }}
 
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -46,3 +47,13 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve "plan"
+
+  install-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure Login
+        run: |
+          az login --service-principal \
+                   --username="$ARM_CLIENT_ID" \
+                   --password="$ARM_CLIENT_SECRET" \
+                   --tenant="$ARM_TENANT_ID"
