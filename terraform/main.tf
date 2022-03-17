@@ -54,6 +54,13 @@ resource "azurerm_network_interface" "network_interface" {
   resource_group_name = data.azurerm_resource_group.resource_group.name
 }
 
+data "azurerm_platform_image" "platform_image" {
+  offer     = "UbuntuServer"
+  location  = data.azurerm_resource_group.resource_group.location
+  publisher = "Canonical"
+  sku       = "18.04-LTS"
+}
+
 resource "azurerm_linux_virtual_machine" "virtual_machine" {
   admin_ssh_key {
     public_key = var.public_key
@@ -74,10 +81,10 @@ resource "azurerm_linux_virtual_machine" "virtual_machine" {
   resource_group_name = data.azurerm_resource_group.resource_group.name
   size                = "Standard_B1ls"
   source_image_reference {
-    offer     = "UbuntuServer"
-    publisher = "Canonical"
-    sku       = "18.04-LTS"
-    version   = "latest"
+    offer     = data.azurerm_platform_image.platform_image.offer
+    publisher = data.azurerm_platform_image.platform_image.publisher
+    sku       = data.azurerm_platform_image.platform_image.sku
+    version   = data.azurerm_platform_image.platform_image.version
   }
 }
 
