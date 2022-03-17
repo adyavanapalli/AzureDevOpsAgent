@@ -16,7 +16,7 @@ locals {
 }
 
 data "azurerm_resource_group" "resource_group" {
-  name = "rg-${common_resource_suffix}"
+  name = "rg-${local.common_resource_suffix}"
 }
 
 data "azurerm_subscription" "subscription" {}
