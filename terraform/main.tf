@@ -55,10 +55,10 @@ resource "azurerm_network_interface" "network_interface" {
 }
 
 data "azurerm_platform_image" "platform_image" {
-  offer     = "UbuntuServer"
+  offer     = "0001-com-ubuntu-server-hirsute"
   location  = data.azurerm_resource_group.resource_group.location
   publisher = "Canonical"
-  sku       = "18.04-LTS"
+  sku       = "21_04-gen2"
 }
 
 resource "azurerm_linux_virtual_machine" "virtual_machine" {
