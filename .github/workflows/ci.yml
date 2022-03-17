@@ -21,6 +21,7 @@ jobs:
       TF_STATE_BLOB_KEY: ${{ secrets.TF_STATE_BLOB_KEY }}
       TF_STATE_BLOB_RESOURCE_GROUP_NAME: ${{ secrets.TF_STATE_BLOB_RESOURCE_GROUP_NAME }}
       TF_STATE_BLOB_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_STATE_BLOB_STORAGE_ACCOUNT_NAME }}
+      TF_VAR_public_key: ${{ secrets.TF_VAR_PUBLIC_KEY }}
 
     steps:
       - name: Checkout
