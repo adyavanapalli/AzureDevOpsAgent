@@ -1,10 +1,19 @@
 name: "CI"
 
+defaults:
+  run:
+    working-directory: terraform
+
 env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_USE_AZUREAD: true
+  TF_STATE_BLOB_CONTAINER_NAME: ${{ secrets.TF_STATE_BLOB_CONTAINER_NAME }}
+  TF_STATE_BLOB_KEY: ${{ secrets.TF_STATE_BLOB_KEY }}
+  TF_STATE_BLOB_RESOURCE_GROUP_NAME: ${{ secrets.TF_STATE_BLOB_RESOURCE_GROUP_NAME }}
+  TF_STATE_BLOB_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_STATE_BLOB_STORAGE_ACCOUNT_NAME }}
 
 on:
   push:
@@ -12,24 +21,13 @@ on:
 
 jobs:
   terraform:
-    defaults:
-      run:
-        working-directory: "terraform"
     env:
-      ARM_USE_AZUREAD: true
-      TF_STATE_BLOB_CONTAINER_NAME: ${{ secrets.TF_STATE_BLOB_CONTAINER_NAME }}
-      TF_STATE_BLOB_KEY: ${{ secrets.TF_STATE_BLOB_KEY }}
-      TF_STATE_BLOB_RESOURCE_GROUP_NAME: ${{ secrets.TF_STATE_BLOB_RESOURCE_GROUP_NAME }}
-      TF_STATE_BLOB_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_STATE_BLOB_STORAGE_ACCOUNT_NAME }}
       TF_VAR_public_key: ${{ secrets.TF_VAR_PUBLIC_KEY }}
 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
 
       - name: Terraform Format
         run: terraform fmt -check
@@ -49,11 +47,31 @@ jobs:
         run: terraform apply -auto-approve "plan"
 
   install-packages:
+    needs: terraform
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Terraform Initialize
+        run: |
+          terraform init \
+            -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
+            -backend-config="key=$TF_STATE_BLOB_KEY" \
+            -backend-config="resource_group_name=$TF_STATE_BLOB_RESOURCE_GROUP_NAME" \
+            -backend-config="storage_account_name=$TF_STATE_BLOB_STORAGE_ACCOUNT_NAME"
+
       - name: Azure Login
         run: |
           az login --service-principal \
                    --username="$ARM_CLIENT_ID" \
                    --password="$ARM_CLIENT_SECRET" \
                    --tenant="$ARM_TENANT_ID"
+
+      - name: Install Terraform on VM
+        run: |
+          LINUX_VIRTUAL_MACHINE_ID=$(terraform output -raw linux_virtual_machine_id)
+
+          az vm run-command invoke --command-id="RunShellScript" \
+                                   --ids="$LINUX_VIRTUAL_MACHINE_ID" \
+                                   --scripts=@scripts/install-terraform.sh
