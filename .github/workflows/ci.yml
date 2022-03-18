@@ -75,3 +75,16 @@ jobs:
           az vm run-command invoke --command-id="RunShellScript" \
                                    --ids="$LINUX_VIRTUAL_MACHINE_ID" \
                                    --scripts=@scripts/install-terraform.sh
+
+      - name: Install Azure DevOps Agent on VM
+        run: |
+          LINUX_VIRTUAL_MACHINE_ID=$(terraform output -raw linux_virtual_machine_id)
+
+          az vm run-command invoke --command-id="RunShellScript" \
+                                   --ids="$LINUX_VIRTUAL_MACHINE_ID" \
+                                   --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL"
+                                   --scripts=@scripts/install-azuredevopsagent.sh
+        env:
+          AGENT_DIRECTORY: vm-azuredevopsagent-eastus
+          TOKEN: ${{ secrets.TOKEN }}
+          URL: https://dev.azure.com/starsandmanifolds
