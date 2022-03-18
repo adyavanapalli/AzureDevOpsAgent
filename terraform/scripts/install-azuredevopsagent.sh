@@ -19,9 +19,7 @@ main () {
 
         cd "$AGENT_DIRECTORY"
 
-        ./config.sh --token="$TOKEN" \
-                    --unattended \
-                    --url="$URL"
+        ./config.sh --token="$TOKEN" --unattended --url="$URL"
 
         sudo ./svc.sh install
         sudo ./svc.sh start

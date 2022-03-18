@@ -78,11 +78,14 @@ jobs:
 
       - name: Install Azure DevOps Agent on VM
         run: |
-          LINUX_VIRTUAL_MACHINE_ID=$(terraform output -raw linux_virtual_machine_id)
+          LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
+          RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
 
-          az vm run-command invoke --command-id="RunShellScript" \
-                                   --ids="$LINUX_VIRTUAL_MACHINE_ID" \
+          az vm run-command create --run-command-name="InstallAzureDevOpsAgent" \
+                                   --vm-name="$LINUX_VIRTUAL_MACHINE_NAME" \
+                                   --resource-group="$RESOURCE_GROUP_NAME" \
                                    --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL" \
+                                   --run-as-user="adyavanapalli" \
                                    --scripts=@scripts/install-azuredevopsagent.sh
         env:
           AGENT_DIRECTORY: vm-azuredevopsagent-eastus
