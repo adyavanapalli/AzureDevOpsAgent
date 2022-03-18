@@ -82,7 +82,7 @@ jobs:
 
           az vm run-command invoke --command-id="RunShellScript" \
                                    --ids="$LINUX_VIRTUAL_MACHINE_ID" \
-                                   --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL"
+                                   --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL" \
                                    --scripts=@scripts/install-azuredevopsagent.sh
         env:
           AGENT_DIRECTORY: vm-azuredevopsagent-eastus
