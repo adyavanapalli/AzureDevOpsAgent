@@ -12,7 +12,7 @@ provider "azurerm" {
 }
 
 locals {
-  common_resource_suffix = "azdevopsagent-eastus"
+  common_resource_suffix = "azuredevopsagent-eastus"
 }
 
 data "azurerm_resource_group" "resource_group" {
