@@ -86,7 +86,7 @@ jobs:
                                    --resource-group="$RESOURCE_GROUP_NAME" \
                                    --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL" \
                                    --run-as-user="adyavanapalli" \
-                                   --scripts=@scripts/install-azuredevopsagent.sh
+                                   --script-url=scripts/install-azuredevopsagent.sh
         env:
           AGENT_DIRECTORY: vm-azuredevopsagent-eastus
           TOKEN: ${{ secrets.TOKEN }}
