@@ -85,7 +85,7 @@ jobs:
 
           az vm run-command invoke --command-id="RunShellScript" \
                                    --name="$LINUX_VIRTUAL_MACHINE_NAME" \
-                                   --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL" \
+                                   --parameters "$AGENT_DIRECTORY" "$AGENT_DOWNLOAD_URL" "$TOKEN" "$URL" \
                                    --resource-group="$RESOURCE_GROUP_NAME" \
                                    --scripts=@scripts/install-azuredevopsagent.sh
 
