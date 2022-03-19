@@ -61,6 +61,9 @@ jobs:
             -backend-config="resource_group_name=$TF_STATE_BLOB_RESOURCE_GROUP_NAME" \
             -backend-config="storage_account_name=$TF_STATE_BLOB_STORAGE_ACCOUNT_NAME"
 
+          export LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
+          export RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
+
       - name: Azure Login
         run: |
           az login --service-principal \
@@ -70,23 +73,19 @@ jobs:
 
       - name: Install Terraform on VM
         run: |
-          LINUX_VIRTUAL_MACHINE_ID=$(terraform output -raw linux_virtual_machine_id)
-
           az vm run-command invoke --command-id="RunShellScript" \
-                                   --ids="$LINUX_VIRTUAL_MACHINE_ID" \
+                                   --name="$LINUX_VIRTUAL_MACHINE_NAME" \
+                                   --resource-group="$RESOURCE_GROUP_NAME"
                                    --scripts=@scripts/install-terraform.sh
 
       - name: Install Azure DevOps Agent on VM
         run: |
-          LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
-          RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
-
-          az vm run-command create --run-command-name="InstallAzureDevOpsAgent" \
-                                   --vm-name="$LINUX_VIRTUAL_MACHINE_NAME" \
-                                   --resource-group="$RESOURCE_GROUP_NAME" \
+          az vm run-command invoke --command-id="RunShellScript" \
+                                   --name="$LINUX_VIRTUAL_MACHINE_NAME" \
                                    --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL" \
-                                   --run-as-user="adyavanapalli" \
-                                   --script-uri=scripts/install-azuredevopsagent.sh
+                                   --resource-group="$RESOURCE_GROUP_NAME" \
+                                   --scripts=@scripts/install-azuredevopsagent.sh
+
         env:
           AGENT_DIRECTORY: vm-azuredevopsagent-eastus
           TOKEN: ${{ secrets.TOKEN }}
