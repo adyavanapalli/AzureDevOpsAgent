@@ -90,6 +90,7 @@ jobs:
                                    --scripts=@scripts/install-azuredevopsagent.sh
 
         env:
-          AGENT_DIRECTORY: vm-azuredevopsagent-eastus
+          AGENT_DIRECTORY: /home/adyavanapalli/vm-azuredevopsagent-eastus
+          AGENT_DOWNLOAD_URL: https://vstsagentpackage.azureedge.net/agent/2.200.2/vsts-agent-linux-x64-2.200.2.tar.gz
           TOKEN: ${{ secrets.TOKEN }}
           URL: https://dev.azure.com/starsandmanifolds
