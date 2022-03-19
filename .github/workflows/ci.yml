@@ -61,9 +61,6 @@ jobs:
             -backend-config="resource_group_name=$TF_STATE_BLOB_RESOURCE_GROUP_NAME" \
             -backend-config="storage_account_name=$TF_STATE_BLOB_STORAGE_ACCOUNT_NAME"
 
-          export LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
-          export RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
-
       - name: Azure Login
         run: |
           az login --service-principal \
@@ -71,15 +68,21 @@ jobs:
                    --password="$ARM_CLIENT_SECRET" \
                    --tenant="$ARM_TENANT_ID"
 
-      # - name: Install Terraform on VM
-      #   run: |
-      #     az vm run-command invoke --command-id="RunShellScript" \
-      #                              --name="$LINUX_VIRTUAL_MACHINE_NAME" \
-      #                              --resource-group="$RESOURCE_GROUP_NAME"
-      #                              --scripts=@scripts/install-terraform.sh
+      - name: Install Terraform on VM
+        run: |
+          export LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
+          export RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
+
+          az vm run-command invoke --command-id="RunShellScript" \
+                                   --name="$LINUX_VIRTUAL_MACHINE_NAME" \
+                                   --resource-group="$RESOURCE_GROUP_NAME"
+                                   --scripts=@scripts/install-terraform.sh
 
       - name: Install Azure DevOps Agent on VM
         run: |
+          export LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
+          export RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
+
           az vm run-command invoke --command-id="RunShellScript" \
                                    --name="$LINUX_VIRTUAL_MACHINE_NAME" \
                                    --parameters "$AGENT_DIRECTORY" "$TOKEN" "$URL" \
