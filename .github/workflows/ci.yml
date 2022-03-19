@@ -71,12 +71,12 @@ jobs:
                    --password="$ARM_CLIENT_SECRET" \
                    --tenant="$ARM_TENANT_ID"
 
-      - name: Install Terraform on VM
-        run: |
-          az vm run-command invoke --command-id="RunShellScript" \
-                                   --name="$LINUX_VIRTUAL_MACHINE_NAME" \
-                                   --resource-group="$RESOURCE_GROUP_NAME"
-                                   --scripts=@scripts/install-terraform.sh
+      # - name: Install Terraform on VM
+      #   run: |
+      #     az vm run-command invoke --command-id="RunShellScript" \
+      #                              --name="$LINUX_VIRTUAL_MACHINE_NAME" \
+      #                              --resource-group="$RESOURCE_GROUP_NAME"
+      #                              --scripts=@scripts/install-terraform.sh
 
       - name: Install Azure DevOps Agent on VM
         run: |
