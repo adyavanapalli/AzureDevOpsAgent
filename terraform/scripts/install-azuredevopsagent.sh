@@ -22,6 +22,8 @@ main () {
             ./config.sh --token=$TOKEN --unattended --url=$URL
         "
 
+        cd "$AGENT_DIRECTORY"
+
         ./svc.sh install
         ./svc.sh start
     fi
