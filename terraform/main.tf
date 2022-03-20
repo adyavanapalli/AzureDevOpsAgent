@@ -79,7 +79,7 @@ resource "azurerm_linux_virtual_machine" "virtual_machine" {
     storage_account_type = "Standard_LRS"
   }
   resource_group_name = data.azurerm_resource_group.resource_group.name
-  size                = "Standard_B1ls"
+  size                = "Standard_B1ms"
   source_image_reference {
     offer     = data.azurerm_platform_image.platform_image.offer
     publisher = data.azurerm_platform_image.platform_image.publisher
