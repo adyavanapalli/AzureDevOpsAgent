@@ -46,7 +46,7 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve "plan"
 
-  install-packages:
+  install-agent:
     needs: terraform
     runs-on: ubuntu-latest
     steps:
