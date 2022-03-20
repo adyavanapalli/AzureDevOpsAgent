@@ -89,7 +89,7 @@ resource "azurerm_linux_virtual_machine" "virtual_machine" {
 }
 
 resource "azurerm_role_assignment" "role_assignment" {
-  for_each = toset(["Owner"])
+  for_each = toset(["Owner", "Storage Blob Data Owner"])
 
   principal_id         = azurerm_linux_virtual_machine.virtual_machine.identity[0].principal_id
   role_definition_name = each.key
