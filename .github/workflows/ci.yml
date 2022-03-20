@@ -78,7 +78,7 @@ jobs:
                                    --resource-group="$RESOURCE_GROUP_NAME" \
                                    --scripts=@scripts/install-terraform.sh
 
-      - name: Install Terraform on VM
+      - name: Install Azure CLI on VM
         run: |
           export LINUX_VIRTUAL_MACHINE_NAME=$(terraform output -raw linux_virtual_machine_name)
           export RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)
