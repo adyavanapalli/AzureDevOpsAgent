@@ -6,4 +6,4 @@ set -o pipefail
 set -o posix
 set -o xtrace
 
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+curl -sL https://aka.ms/InstallAzureCLI | sudo bash
