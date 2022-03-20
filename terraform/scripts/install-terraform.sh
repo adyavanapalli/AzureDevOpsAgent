@@ -8,6 +8,6 @@ set -o xtrace
 
 curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 
-sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-sudo apt-get update
-sudo apt-get install terraform
+sudo apt-add-repository --yes "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt-get --yes update
+sudo apt-get --yes install terraform
