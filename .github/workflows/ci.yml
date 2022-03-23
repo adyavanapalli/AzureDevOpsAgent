@@ -108,6 +108,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_USE_AZUREAD: true
+      TF_CLI_CONFIG_FILE: .terraformrc
 
     needs: terraform
     runs-on: ubuntu-latest
@@ -115,13 +116,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Terraform Initialize
+      - name: Setup Terraform Credentials
         run: |
-          terraform init \
-            -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
-            -backend-config="key=$TF_STATE_BLOB_KEY" \
-            -backend-config="resource_group_name=$TF_STATE_BLOB_RESOURCE_GROUP_NAME" \
-            -backend-config="storage_account_name=$TF_STATE_BLOB_STORAGE_ACCOUNT_NAME"
+          cat << EOF > "$TF_CLI_CONFIG_FILE"
+          credentials "app.terraform.io" {
+            token = "$TF_API_TOKEN"
+          }
+          EOF
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Initialize
+        run: terraform init
 
       - name: Azure Login
         run: |
