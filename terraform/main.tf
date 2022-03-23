@@ -74,7 +74,7 @@ resource "azurerm_linux_virtual_machine" "virtual_machine" {
     username   = var.username
   }
   admin_username             = var.username
-  allow_extension_operations = false
+  allow_extension_operations = true
   identity {
     type = "SystemAssigned"
   }
