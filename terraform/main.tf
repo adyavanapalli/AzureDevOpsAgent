@@ -51,8 +51,9 @@ resource "azurerm_network_interface" "network_interface" {
   ip_configuration {
     name                          = "nicip-${local.common_resource_suffix}"
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.public_ip.id
-    subnet_id                     = azurerm_subnet.subnet.id
+    #bridgecrew:skip=CKV_AZURE_119:Needed to SSH into the agent.
+    public_ip_address_id = azurerm_public_ip.public_ip.id
+    subnet_id            = azurerm_subnet.subnet.id
   }
   location            = data.azurerm_resource_group.resource_group.location
   name                = "nic-${local.common_resource_suffix}"
@@ -71,7 +72,8 @@ resource "azurerm_linux_virtual_machine" "virtual_machine" {
     public_key = var.public_key
     username   = var.username
   }
-  admin_username = var.username
+  admin_username             = var.username
+  allow_extension_operations = false
   identity {
     type = "SystemAssigned"
   }
