@@ -1,52 +1,114 @@
-name: "CI"
+name: CI
 
 defaults:
   run:
     working-directory: terraform
 
-env:
-  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-  ARM_USE_AZUREAD: true
-  TF_STATE_BLOB_CONTAINER_NAME: ${{ secrets.TF_STATE_BLOB_CONTAINER_NAME }}
-  TF_STATE_BLOB_KEY: ${{ secrets.TF_STATE_BLOB_KEY }}
-  TF_STATE_BLOB_RESOURCE_GROUP_NAME: ${{ secrets.TF_STATE_BLOB_RESOURCE_GROUP_NAME }}
-  TF_STATE_BLOB_STORAGE_ACCOUNT_NAME: ${{ secrets.TF_STATE_BLOB_STORAGE_ACCOUNT_NAME }}
-
 on:
   push:
     branches: [ main ]
 
-jobs:
-  terraform:
-    env:
-      TF_VAR_public_key: ${{ secrets.TF_VAR_PUBLIC_KEY }}
+  pull_request:
+    branches: [ main ]
 
+jobs:
+  checkov-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Terraform Format
-        run: terraform fmt -check
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov-action@master
 
-      - name: Terraform Initialize
+  # TODO: terrascan always fails due to not supporting the `terraform.cloud`
+  # block just yet.
+
+  # terrascan-scan:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+
+  #     - name: Terrascan Scan
+  #       uses: accurics/terrascan-action@v1
+  #       with:
+  #         iac_type: terraform
+  #         iac_version: v15
+  #         verbose: true
+
+  tfsec-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@v3.0.0
+        with:
+          go-version: 1.18
+          check-latest: true
+
+      - name: TFSec Scan
         run: |
-          terraform init \
-            -backend-config="container_name=$TF_STATE_BLOB_CONTAINER_NAME" \
-            -backend-config="key=$TF_STATE_BLOB_KEY" \
-            -backend-config="resource_group_name=$TF_STATE_BLOB_RESOURCE_GROUP_NAME" \
-            -backend-config="storage_account_name=$TF_STATE_BLOB_STORAGE_ACCOUNT_NAME"
+          go install github.com/aquasecurity/tfsec/cmd/tfsec@latest
 
-      - name: Terraform Plan
-        run: terraform plan -out plan
+          tfsec
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve "plan"
+  terraform:
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_USE_AZUREAD: true
+      TF_CLI_CONFIG_FILE: .terraformrc
+      TF_VAR_public_key: ${{ secrets.TF_VAR_PUBLIC_KEY }}
+
+    needs:
+      - checkov-scan
+      # - terrascan-scan
+      - tfsec-scan
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    - name: Setup Terraform Credentials
+      run: |
+        cat << EOF > "$TF_CLI_CONFIG_FILE"
+        credentials "app.terraform.io" {
+          token = "$TF_API_TOKEN"
+        }
+        EOF
+      env:
+        TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Initialize
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan -out plan
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve "plan"
 
   install-agent:
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_USE_AZUREAD: true
+
     needs: terraform
     runs-on: ubuntu-latest
     steps:
@@ -102,5 +164,5 @@ jobs:
         env:
           AGENT_DIRECTORY: /home/adyavanapalli/vm-azuredevopsagent-eastus
           AGENT_DOWNLOAD_URL: https://vstsagentpackage.azureedge.net/agent/2.200.2/vsts-agent-linux-x64-2.200.2.tar.gz
-          TOKEN: ${{ secrets.TOKEN }}
+          TOKEN: ${{ secrets.AGENT_PAT }}
           URL: https://dev.azure.com/starsandmanifolds

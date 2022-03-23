@@ -9,7 +9,7 @@ set -o xtrace
 main () {
     AGENT_DIRECTORY="$1"
     AGENT_DOWNLOAD_URL="$2"
-    TOKEN="$3"
+    AGENT_PAT="$3"
     URL="$4"
 
     if [ ! -d "$AGENT_DIRECTORY" ]; then
@@ -19,7 +19,7 @@ main () {
             wget --output-document - $AGENT_DOWNLOAD_URL | tar --extract --gzip --verbose --directory=$AGENT_DIRECTORY
 
             cd $AGENT_DIRECTORY
-            ./config.sh --token=$TOKEN --unattended --url=$URL
+            ./config.sh --token=$AGENT_PAT --unattended --url=$URL
         "
 
         cd "$AGENT_DIRECTORY"
