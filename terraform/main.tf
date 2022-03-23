@@ -73,7 +73,8 @@ resource "azurerm_linux_virtual_machine" "virtual_machine" {
     public_key = var.public_key
     username   = var.username
   }
-  admin_username             = var.username
+  admin_username = var.username
+  #bridgecrew:skip=CKV_AZURE_50:Needed to install Azure DevOps agent.
   allow_extension_operations = true
   identity {
     type = "SystemAssigned"
